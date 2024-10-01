@@ -67,15 +67,6 @@ jobs:
         with:
           python-version: "3.10"
 
-      # - name: Writing PSPDFKIT's key into a file to be then picked up by gradle.
-      #   run: echo ${{secrets.PSPDFKIT_KEY}} | sed 's/./& /g' > pspdfkit-key.txt
-
-      # - name: Decrypt Keystore
-      #   run: openssl aes-256-cbc -d -in .github/keystore.cipher -k ${{secrets.SIGNING_KEY}} -md sha256 > zotero.release.keystore
-
-      # - name: Decrypt Keystore secrets
-      #   run: openssl aes-256-cbc -d -in .github/keystore-secrets.cipher -k ${{secrets.SIGNING_KEY}} -md sha256 > keystore-secrets.txt
-
       - name: Grant execute permission for bundle_translators.py
         run: chmod +x scripts/bundle_translators.py
 
@@ -88,14 +79,16 @@ jobs:
       - name: Execute bundle_translation.py
         run: python3 scripts/bundle_translation.py
 
+      - name: Inject PSPDFKit Key
+        run: |
+          PSPDFKIT_KEY="4LSxV8WlqrPcOo3tYOebYyMkHS2GoFrMdEz051r1yyYWsQK_GwGEVv3PADn9_wOSlutRIwlH-7E-6_G9uWCuB4OR5fByTI_qXotpbgfep0NiqxbKrFgxhMcRqmyT7doMmbVbt2xyhhfWch3AzRdToFxMcpq-ETP07HBtpGOobP0LWeMuT1CruCixzHlNUH0EwcLlEddbJ3n4ke1Uu6Cta54hh7v6vKcnG-hGsO9HZJYXCHQtF-hSFk5TQhEuZXxHYeRvxogLzf9z0FzpEQlDwnpyKPFMYU1rBi10aDgNv9X3MsXxeQboR50hssCpWWTYR4tAtl09Xl6MpptqzACbfOyIzVzmCBQXbk5faHVMnn6qWPPXDkJI1HZfZbFD8bs"
+          sed -i "s/buildConfigField(\"String\", \"PSPDFKIT_KEY\", \".*\")/buildConfigField(\"String\", \"PSPDFKIT_KEY\", \"\\\"$PSPDFKIT_KEY\\\"\")/" app/build.gradle.kts
+
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
       - name: Download Android dependencies
         run: ./gradlew androidDependencies --no-configuration-cache
-
-      # - name: Deploy to Google Play Internal Test Track
-      #   run: ./gradlew --no-configuration-cache -PpreDexLibs=false publishInternalReleaseBundle --stacktrace
 
       - name: Build with Gradle
         run: ./gradlew assembleDebug
@@ -134,7 +127,6 @@ jobs:
           mv app/build/outputs/apk/dev/debug/app-dev-debug.apk app/build/outputs/apk/dev/debug/app-dev-debug-${{ steps.metadata.outputs.value }}-${{ needs.check.outputs.commit_hash }}.apk
 
       - name: Create release
-        # if: ${{ steps.metadata.outputs.elements[0].versionName != steps.latest_release.outputs.tag_name }}
         uses: ncipollo/release-action@v1
         with:
           tag: ${{ steps.metadata.outputs.value }}
