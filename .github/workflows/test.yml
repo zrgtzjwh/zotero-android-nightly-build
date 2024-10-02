@@ -68,8 +68,8 @@ jobs:
         with:
           python-version: "3.10"
 
-      # - name: Writing PSPDFKIT's key into a file to be then picked up by gradle.
-      #   run: echo ${{secrets.PSPDFKIT_KEY}} | sed 's/./& /g' > pspdfkit-key.txt
+      - name: Writing PSPDFKIT's key into a file to be then picked up by gradle.
+        run: echo ${{secrets.PSPDFKIT_KEY}} | sed 's/./& /g' > pspdfkit-key.txt
 
       # - name: Decrypt Keystore
       #   run: openssl aes-256-cbc -d -in .github/keystore.cipher -k ${{secrets.SIGNING_KEY}} -md sha256 > zotero.release.keystore
@@ -82,11 +82,6 @@ jobs:
 
       - name: Execute bundle_translators.py
         run: python3 scripts/bundle_translators.py
-
-      - name: Inject PSPDFKit Key
-        run: |
-          PSPDFKIT_KEY="4LSxV8WlqrPcOo3tYOebYyMkHS2GoFrMdEz051r1yyYWsQK_GwGEVv3PADn9_wOSlutRIwlH-7E-6_G9uWCuB4OR5fByTI_qXotpbgfep0NiqxbKrFgxhMcRqmyT7doMmbVbt2xyhhfWch3AzRdToFxMcpq-ETP07HBtpGOobP0LWeMuT1CruCixzHlNUH0EwcLlEddbJ3n4ke1Uu6Cta54hh7v6vKcnG-hGsO9HZJYXCHQtF-hSFk5TQhEuZXxHYeRvxogLzf9z0FzpEQlDwnpyKPFMYU1rBi10aDgNv9X3MsXxeQboR50hssCpWWTYR4tAtl09Xl6MpptqzACbfOyIzVzmCBQXbk5faHVMnn6qWPPXDkJI1HZfZbFD8bs"
-          sed -i "s/buildConfigField(\"String\", \"PSPDFKIT_KEY\", \".*\")/buildConfigField(\"String\", \"PSPDFKIT_KEY\", \"\\\"$PSPDFKIT_KEY\\\"\")/" app/build.gradle.kts
 
       - name: Grant execute permission for bundle_translation.py
         run: chmod +x scripts/bundle_translation.py
